@@ -22,6 +22,7 @@ import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
+import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -43,24 +44,34 @@ import okhttp3.Response;
 public class FlutterTestDemoPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
 
     private static PluginRegistry.Registrar registrar1;
-    private  Context mContext;
+    private Context mContext;
     ActivityPluginBinding activityPluginBinding1;
-
 
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-       // mContext =flutterPluginBinding.getApplicationContext();
-        final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "flutter_test_demo");
-        channel.setMethodCallHandler(new FlutterTestDemoPlugin());
+        // mContext =flutterPluginBinding.getApplicationContext();
+//        final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "flutter_test_demo");
+//        channel.setMethodCallHandler(new FlutterTestDemoPlugin());
+        onAttachedToEngine(flutterPluginBinding.getApplicationContext(), flutterPluginBinding.getBinaryMessenger());
+    }
+
+    public void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
+
+        this.mContext = applicationContext;
+        final MethodChannel channel = new MethodChannel(messenger, "flutter_test_demo");
+        channel.setMethodCallHandler(this);
+
+
     }
 
 
     public static void registerWith(PluginRegistry.Registrar registrar) {
-        FlutterTestDemoPlugin.registrar1=registrar;
+        FlutterTestDemoPlugin.registrar1 = registrar;
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_test_demo");
         channel.setMethodCallHandler(new FlutterTestDemoPlugin());
     }
+
 
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
@@ -71,8 +82,8 @@ public class FlutterTestDemoPlugin implements FlutterPlugin, MethodCallHandler, 
             HashMap param = call.argument("param");
             String url = call.argument("url");
             doRequest(url, param, result);
-            Log.e("44444444444444","zhixngle");
-            //Toast.makeText(mContext,"测试的 ",Toast.LENGTH_LONG).show();
+            Log.e("44444444444444", "zhixngle");
+            Toast.makeText(mContext, "测试的 ", Toast.LENGTH_LONG).show();
         } else {
             result.notImplemented();
 
@@ -107,7 +118,6 @@ public class FlutterTestDemoPlugin implements FlutterPlugin, MethodCallHandler, 
                     final String content = "Unexpected code " + response;
 
 
-
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
@@ -117,13 +127,7 @@ public class FlutterTestDemoPlugin implements FlutterPlugin, MethodCallHandler, 
                     });
 
 //
-//                   activityPluginBinding1.getActivity().runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//
-//                            result.error("Error", content, null);
-//                        }
-//                    });
+
 
                 } else {
                     final String content = response.body().string();
@@ -135,6 +139,7 @@ public class FlutterTestDemoPlugin implements FlutterPlugin, MethodCallHandler, 
                             result.success(content);
                         }
                     });
+
 
 //
 //                    activityPluginBinding1.getActivity().runOnUiThread(new Runnable() {
@@ -167,7 +172,6 @@ public class FlutterTestDemoPlugin implements FlutterPlugin, MethodCallHandler, 
     @Override
     public void onAttachedToActivity(ActivityPluginBinding activityPluginBinding) {
 
-      activityPluginBinding1=activityPluginBinding;
 
     }
 
